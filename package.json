@@ -1,0 +1,58 @@
+{
+  "name": "browserux-share-button",
+  "version": "1.0.0",
+  "description": "A smart, customizable Web Component for sharing content via Web Share API with graceful fallback.",
+  "main": "dist/browserux-share-button.umd.js",
+  "module": "dist/browserux-share-button.esm.js",
+  "types": "dist/browserux-share-button.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "author": "Effeilo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Effeilo/browserux-share-button.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Effeilo/browserux-share-button/issues"
+  },
+  "keywords": [
+    "web component",
+    "custom element",
+    "share",
+    "share button",
+    "social share",
+    "native share",
+    "web share api",
+    "pwa",
+    "link sharing",
+    "fallback",
+    "modal",
+    "clipboard",
+    "copy to clipboard",
+    "i18n",
+    "accessibility",
+    "a11y",
+    "shadow dom",
+    "design system",
+    "react",
+    "vue",
+    "angular"
+  ],
+  "dependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "rollup": "^4.42.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup-plugin-import-css": "^4.0.1"
+  }
+}

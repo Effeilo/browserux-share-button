@@ -1,0 +1,102 @@
+:root {
+  --bux-page-bg: #eaeaea;
+  --bux-page-color: #121212;
+  --bux-color-primary: #f05e0e;
+  --bux-color-secondary: #0e93f0;
+  --bux-white: #fff;
+  --bux-typo-font-family: Dosis, system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+}
+
+/** 
+ * Colors for Dark Mode
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bux-page-bg: #333;
+    --bux-page-color: #eaeaea;
+    --bux-color-primary: #eb8a55;
+    --bux-color-secondary: #58aae3;
+    --bux-white: #444;
+  }
+}
+
+[data-theme="dark"] {
+  --bux-page-bg: #333;
+  --bux-page-color: #eaeaea;
+  --bux-color-primary: #eb8a55;
+  --bux-color-secondary: #58aae3;
+  --bux-white: #444;
+}
+
+h1 {
+  font-size: 4.4rem;
+  margin: 0;
+}
+
+h2 {
+  font-size: 3.5rem;
+  margin: 0 0 3rem 0;
+  line-height: 1;
+  color: var(--bux-color-secondary);
+}
+
+main {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 2rem;
+  text-align: center;
+}
+
+main > div {
+  background-color: var(--bux-white);
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  max-width: 800px;
+  animation: fade-in-up 0.3s ease-out forwards;
+  display: flex;
+  flex-direction: column;
+  font-size: 2.4rem;
+  gap: 5rem;
+}
+
+@media only screen and (min-width: 768px) {
+  main > div {
+    padding: 5rem;
+  }
+}
+
+header {
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+header > img {
+  width: 300px;
+}
+
+.has-dark {
+  border-radius: 10px;
+}
+
+.notice {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

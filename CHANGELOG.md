@@ -1,0 +1,35 @@
+**EN** | [FR](./fr/CHANGELOG.md)
+
+<div>
+  <img src="https://browserux.com/assets/img/logo/logo-browserux-share-button-250.png" alt="logo BrowserUX Share Button"/>
+</div>
+
+# 📦 Changelog
+
+All notable changes to this project will be documented in this file.
+
+This changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)  
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+---
+
+<br>
+
+## [1.0.0] – 2025-06-23
+
+### ✨ Added
+
+- 💡 Web Component `<browserux-share-button>` to trigger native share or fallback
+- ✨ Supports native navigator.share() API when available
+- ❓ Automatic fallback with platform links: Email, SMS, Facebook, WhatsApp, X, etc.
+- 🌍 Multilingual support (lang detection + 9 built-in languages)
+- ♿️ Accessible and keyboard-navigable fallback UI
+- 🎨 Styleable via CSS and no-shadow mode
+- 🔹 Attributes for custom share content (title, text, url)
+- 🏑 Dynamic fallback populated from web manifest
+- 🔧 Written in TypeScript, outputs in ESM, UMD + types
+- 🗃 Fully compatible with all frameworks (React, Vue, Angular) or vanilla HTML
+
+<br>
+
+---

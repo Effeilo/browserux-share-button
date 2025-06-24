@@ -1,0 +1,30 @@
+# Node dependencies
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Build output
+dist/
+*.log
+
+# TypeScript cache
+*.tsbuildinfo
+
+# IDE / editor configs
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# MacOS Finder
+.AppleDouble
+.LSOverride
+
+# VSCode history plugin
+.history/
+
+# Optional: demo output or test coverage
+coverage/
+demo/build/
