@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <br>
 
+## [1.0.1] – 2025-06-27
+
+### 🛠 Fixed
+
+- 🐛 Fixed inability to override CSS variables from the `style` attribute due to Shadow DOM encapsulation
+- ✅ Now supports inline styles via `style="--bux-share-btn-bg: red"` thanks to injected `:host { ... }` rule during `connectedCallback`
+
+<br>
+
+---
+
+<br>
+
 ## [1.0.0] – 2025-06-23
 
 ### ✨ Added

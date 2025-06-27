@@ -15,6 +15,19 @@ et ce projet suit les recommandations de versionnage [SemVer](https://semver.org
 
 <br>
 
+## [1.0.1] – 27-06-2025
+
+### 🛠 Fixed
+
+- 🐛 Correction d’un bug empêchant la surcharge des variables CSS via l’attribut `style` à cause de l’encapsulation Shadow DOM
+- ✅ Les styles inline comme `style="--bux-share-btn-bg: red"` sont désormais bien appliqués via une règle `:host { ... }` injectée dynamiquement
+
+<br>
+
+---
+
+<br>
+
 ## [1.0.0] – 23-06-2025
 
 ### ✨ Ajout

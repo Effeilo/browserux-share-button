@@ -939,6 +939,16 @@ class ShareButton extends HTMLElement {
     // Set URL to share from attribute or current page
     this.shareUrl = this.getAttribute('url') || location.href;
 
+    // Apply inline style variables to :host inside shadowRoot
+    if (this.hasAttribute('style') && this.root instanceof ShadowRoot) {
+      const inlineStyle = this.getAttribute('style');
+      if (inlineStyle) {
+        const styleEl = document.createElement('style');
+        styleEl.textContent = `:host { ${inlineStyle} }`;
+        this.root.appendChild(styleEl);
+      }
+    }
+
     // Proceed to render the component with the resolved values
     this.render(); 
   }
