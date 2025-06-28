@@ -15,9 +15,22 @@ et ce projet suit les recommandations de versionnage [SemVer](https://semver.org
 
 <br>
 
+## [1.0.2] – 28-06-2025
+
+### 🛠 Corrigé 
+
+- 🧩 Introduction de la méthode interne `applyInlineCSSVars()` permettant de mapper les propriétés personnalisées définies dans l’attribut `style` vers le Shadow DOM du composant
+
+<br>
+
+---
+
+<br>
+
+
 ## [1.0.1] – 27-06-2025
 
-### 🛠 Fixed
+### 🛠 Corrigé 
 
 - 🐛 Correction d’un bug empêchant la surcharge des variables CSS via l’attribut `style` à cause de l’encapsulation Shadow DOM
 - ✅ Les styles inline comme `style="--bux-share-btn-bg: red"` sont désormais bien appliqués via une règle `:host { ... }` injectée dynamiquement

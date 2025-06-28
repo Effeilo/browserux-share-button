@@ -62,11 +62,11 @@ template.innerHTML = `
   :root {
     --bux-share-btn-bg: #eaeaea;
     --bux-share-btn-color: #121212;
-    --bux-share-btn-font-size: 20px;
-    --bux-share-btn-height: 42px;
-    --bux-share-btn-padding-inline: 15px;
-    --bux-share-btn-border-radius: 5px;
-    --bux-share-btn-gap: 5px;
+    --bux-share-btn-font-size: 2rem;
+    --bux-share-btn-height: 4.2rem;
+    --bux-share-btn-padding-inline: 1.5rem;
+    --bux-share-btn-border-radius: 0.5rem;
+    --bux-share-btn-gap: 0.5rem;
     --bux-share-btn-hover-bg: #121212;
     --bux-share-btn-hover-color: #eaeaea;
   }
@@ -130,8 +130,8 @@ const fallbackStyle = `
 :root {
   --bux-share-fallback-bg: #251f17;
   --bux-share-fallback-color: #ede0d4;
-  --bux-share-fallback-border-radius: 20px;
-  --bux-share-fallback-title-font-size: 22px;
+  --bux-share-fallback-border-radius: 2rem;
+  --bux-share-fallback-title-font-size: 2.2rem;
   --bux-share-fallback-copy-box-bg: #302921;
 }
 
@@ -939,18 +939,44 @@ class ShareButton extends HTMLElement {
     // Set URL to share from attribute or current page
     this.shareUrl = this.getAttribute('url') || location.href;
 
-    // Apply inline style variables to :host inside shadowRoot
-    if (this.hasAttribute('style') && this.root instanceof ShadowRoot) {
-      const inlineStyle = this.getAttribute('style');
-      if (inlineStyle) {
-        const styleEl = document.createElement('style');
-        styleEl.textContent = `:host { ${inlineStyle} }`;
-        this.root.appendChild(styleEl);
-      }
-    }
-
     // Proceed to render the component with the resolved values
     this.render(); 
+
+    // Apply inline custom properties defined via `style="--var: value"` (Shadow DOM-safe)
+    this.applyInlineCSSVars();
+  }
+
+  /**
+   * Applies inline CSS custom properties defined via the `style` attribute
+   * (e.g. `<browserux-share-button style="--bux-share-btn-bg: red">`)
+   * to the correct rendering context (Shadow DOM or Light DOM).
+   *
+   * Why this is necessary:
+   * - CSS custom properties set on the `style` attribute are **not scoped** into Shadow DOM
+   *   due to encapsulation.
+   * - This method manually reads all `--*` custom properties from `this.style`
+   *   and re-applies them to the host using `style.setProperty(...)`.
+   *
+   * Automatically called after the component is mounted via `connectedCallback()`.
+   */
+
+  private applyInlineCSSVars() {
+    const isShadowRoot = (node: ShadowRoot | HTMLElement): node is ShadowRoot =>
+      node instanceof ShadowRoot;
+
+    const targetEl = isShadowRoot(this.root) ? this.root.host : this.root;
+
+    if (targetEl instanceof HTMLElement) {
+      for (let i = 0; i < this.style.length; i++) {
+        const name = this.style.item(i);
+        if (name.startsWith('--')) {
+          const value = this.style.getPropertyValue(name);
+          if (value) {
+            targetEl.style.setProperty(name, value);
+          }
+        }
+      }
+    }
   }
 
 }

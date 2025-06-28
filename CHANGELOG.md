@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <br>
 
+## [1.0.2] – 2025-06-28
+
+### 🛠 Fixed
+
+- 🧩 Introduced internal `applyInlineCSSVars()` method to map `style` attribute custom properties into the component's Shadow DOM
+
+<br>
+
+---
+
+<br>
+
+
 ## [1.0.1] – 2025-06-27
 
 ### 🛠 Fixed
