@@ -15,6 +15,19 @@ et ce projet suit les recommandations de versionnage [SemVer](https://semver.org
 
 <br>
 
+## [1.0.3] – 29-06-2025
+
+### 🛠 Corrigé 
+
+- 📱 Correction de l'affichage du fallback après annulation du partage natif (ex. sur mobile)
+- 🚫 Meilleure gestion des erreurs : les exceptions `AbortError` ou contenant `cancel` ne déclenchent plus l'affichage du fallback
+
+<br>
+
+---
+
+<br>
+
 ## [1.0.2] – 28-06-2025
 
 ### 🛠 Corrigé 

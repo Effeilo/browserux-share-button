@@ -561,23 +561,28 @@ class ShareButton extends HTMLElement {
 
       // Check if the Web Share API is available in the browser
       if ('share' in navigator) {
-        // If available, and canShare exists, ensure it's valid
+        // If supported, and canShare is available, validate the data
         if (navigator.canShare && !navigator.canShare(data)) {
-          // Use fallback if not shareable
+          // If the data is not shareable, fall back to custom UI
           this.showFallback();
           return;
         }
 
         try {
-          // Try to share using the native API
+          // Try sharing using the native Web Share API
           await navigator.share(data);
-        } catch (err) {
-          // If native sharing fails (e.g., user cancels), show fallback
+        } catch (err: any) {
+          // If the user cancels the share, silently ignore the error
+          if (err.name === 'AbortError' || err.message?.includes('cancel')) {
+            return;
+          }
+
+          // On any other error, fallback to custom share options
           console.error(this.labels.errorShare, err);
           this.showFallback();
         }
       } else {
-        // If Web Share API is not supported, use fallback
+        // If Web Share API is not supported, fallback to custom UI
         this.showFallback();
       }
     });

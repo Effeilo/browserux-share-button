@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <br>
 
+## [1.0.3] – 2025-06-29
+
+### 🛠 Fixed
+
+- 📱 Prevented fallback modal from appearing after user cancels native sharing (e.g. on mobile)
+- 🚫 Improved error handling by ignoring user-initiated `AbortError` and `cancel`-related exceptions from `navigator.share()`
+
+<br>
+
+---
+
+<br>
+
 ## [1.0.2] – 2025-06-28
 
 ### 🛠 Fixed
@@ -26,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ---
 
 <br>
-
 
 ## [1.0.1] – 2025-06-27
 
