@@ -1,6 +1,6 @@
 {
   "name": "browserux-share-button",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A smart, customizable Web Component for sharing content via Web Share API with graceful fallback.",
   "main": "dist/browserux-share-button.umd.js",
   "module": "dist/browserux-share-button.esm.js",
