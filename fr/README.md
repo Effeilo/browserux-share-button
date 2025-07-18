@@ -1,7 +1,7 @@
 [EN](../README.md) | **FR**
 
 <div>
-  <img src="https://browserux.com/assets/img/logo/logo-browserux-share-button-250.png" alt="logo BrowserUX Share Button"/>
+  <img src="https://browserux.com/img/logos/logo-browserux-share-button-300.png" alt="logo BrowserUX Share Button"/>
 </div>
 
 # BrowserUX Share Button
