@@ -16,4 +16,7 @@ export type LangKeys =
   | 'ru'
   | 'pt'
   | 'it'
-  | 'nl';
+  | 'nl'
+  | 'zh'
+  | 'ko'
+  | 'ar';

@@ -18,6 +18,9 @@ Un Web Component moderne et adaptable pour faciliter le partage de contenu sur t
 - [Installation](#installation)
 - [Utilisation](#utilisation)
 - [Paramètres](#parametres-du-browserux-share-button)
+- [Événements custom](#événements-custom)
+- [API programmatique](#api-programmatique)
+- [Registre de plateformes custom](#registre-de-plateformes-custom)
 - [Build & Développement](#build--développement)
 - [Licence](#licence)
 
@@ -34,16 +37,19 @@ Un Web Component moderne et adaptable pour faciliter le partage de contenu sur t
 - 🎯 **Détection automatique des métadonnées**  
   Lit automatiquement les métadonnées de partage `title`, `text` et `url` via les attributs HTML, le document, ou le manifeste web.
 
-- 📧 **Partage multi-plateformes**  
+- 📧 **Partage multi-plateformes**
   Prend en charge Email, SMS, X (Twitter), Facebook, WhatsApp, LinkedIn, Telegram et Reddit.
 
-- 🚫 **Désactivation par plateforme**  
+- 🔌 **Registre de plateformes custom**
+  Enregistrez des plateformes tierces (ex. Mastodon, Bluesky) via `ShareButton.registerPlatform()`.
+
+- 🚫 **Désactivation par plateforme**
   Désactivez une ou plusieurs plateformes via des attributs comme `facebook="false"` ou `sms="false"`.
 
 ### 🌍 Accessibilité & Internationalisation
 
-- 🌐 **Support multilingue (`lang`)**  
-  Interface et labels ARIA localisés, détectés automatiquement ou définis manuellement via l'attribut `lang`.
+- 🌐 **Support multilingue (`lang`)**
+  Interface et labels ARIA localisés en 12 langues intégrées, détectés automatiquement ou définis via l'attribut `lang`.
 
 - 🦮 **Accessibilité clavier et ARIA**  
   Modale accessible avec rôles ARIA, piège au focus, et navigation clavier (Escape, Tab, Shift+Tab).
@@ -64,17 +70,23 @@ Un Web Component moderne et adaptable pour faciliter le partage de contenu sur t
 
 ### 🔧 Expérience développeur
 
-- 🧼 **Shadow DOM optionnel (`no-shadow`)**  
+- 🧼 **Shadow DOM optionnel (`no-shadow`)**
   Rendu en Shadow DOM par défaut ; option de le désactiver pour un style global plus flexible.
 
-- 🧩 **Compatible avec tous les frameworks**  
+- 🧩 **Compatible avec tous les frameworks**
   Fonctionne avec tous les frameworks frontend (React, Vue, Angular) ou en HTML pur.
 
-- 📦 **Léger et optimisé pour le tree-shaking**  
+- 📦 **Léger et optimisé pour le tree-shaking**
   Zéro dépendance. Importe uniquement ce dont vous avez besoin, avec types TypeScript inclus.
 
-- 🧪 **Modulaire et typé**  
+- 🧪 **Modulaire et typé**
   Écrit en TypeScript avec enums `SharePlatform` typés et utilitaires exportables (`getShareIcon`, `getBestIconUrl`).
+
+- 📡 **Système d'événements custom**
+  Émet des `CustomEvent` (avec propagation, traversant le Shadow DOM) pour chaque interaction — `bux:share-success`, `bux:fallback-open`, `bux:copy-success`, etc.
+
+- 🖱 **API programmatique**
+  Contrôlez le composant depuis JavaScript : `share()`, `setShareData()`, `openFallback()`, `closeFallback()`.
 
   ## Fonctionnement
 
@@ -109,7 +121,7 @@ Lorsque le fallback est activé, la modale :
 ### 4. Langue & accessibilité
 
 - Le composant détecte automatiquement la langue via l'attribut `lang` ou `<html lang>`
-- Tous les messages ARIA et labels sont traduits (10+ langues intégrées)
+- Tous les messages ARIA et labels sont traduits (12 langues intégrées)
 - La modale et le bouton sont entièrement accessibles (ARIA, navigation clavier, piège au focus)
 
 ## Installation
@@ -364,6 +376,9 @@ Dans cet exemple, tous les libellés comme "Copier le lien" ou les messages d’
 - Portugais (`pt`)
 - Italien (`it`)
 - Néerlandais (`nl`)
+- Chinois (`zh`)
+- Coréen (`ko`)
+- Arabe (`ar`)
 
 > Astuce : vous pouvez aussi remplacer n’importe quel libellé avec `data-label-*` pour une personnalisation totale.
 
@@ -487,6 +502,118 @@ Vous pouvez surcharger les libellés internes du composant (accessibilité ARIA 
 
 > Astuce : ces attributs priment sur `lang` et sont utiles pour les apps hybrides ou multilingues.
 
+## Événements custom
+
+Le composant émet des `CustomEvent` qui se propagent et traversent les frontières Shadow DOM (`composed: true`), observables depuis n'importe quel élément parent.
+
+| Événement | Quand | `event.detail` |
+|---|---|---|
+| `bux:share-success` | Partage natif réussi | `{ title, text, url }` |
+| `bux:share-abort` | L'utilisateur a annulé la boîte de partage | — |
+| `bux:share-error` | Erreur inattendue lors du partage natif | `{ error }` |
+| `bux:fallback-open` | Modale fallback ouverte | — |
+| `bux:fallback-close` | Modale fallback fermée | — |
+| `bux:copy-success` | Lien copié dans le presse-papiers | `{ url }` |
+| `bux:copy-error` | Échec de l'écriture dans le presse-papiers | `{ error }` |
+
+### Exemple
+
+```js
+const btn = document.querySelector('browserux-share-button');
+
+btn.addEventListener('bux:share-success', (e) => {
+  console.log('Partagé :', e.detail.url);
+});
+
+btn.addEventListener('bux:copy-success', (e) => {
+  analytics.track('lien_copie', { url: e.detail.url });
+});
+
+btn.addEventListener('bux:fallback-close', () => {
+  console.log('Modale fermée');
+});
+```
+
+---
+
+## API programmatique
+
+Au-delà des attributs HTML, `<browserux-share-button>` expose des méthodes publiques appelables directement depuis JavaScript.
+
+### `share()`
+
+Déclenche le flux de partage par code, comme si l'utilisateur avait cliqué sur le bouton.
+
+```js
+const btn = document.querySelector('browserux-share-button');
+btn.share();
+```
+
+### `setShareData(data)`
+
+Met à jour les données de partage à la volée sans re-rendu. Accepte un objet partiel — seuls les champs fournis sont modifiés.
+
+```js
+btn.setShareData({
+  title: 'Nouveau titre',
+  url: 'https://example.com/nouvelle-page',
+});
+```
+
+### `openFallback()`
+
+Ouvre la modale fallback par code, quelle que soit la disponibilité de l'API Web Share.
+
+```js
+btn.openFallback();
+```
+
+### `closeFallback()`
+
+Ferme la modale fallback par code et restaure le focus sur le bouton de partage.
+
+```js
+btn.closeFallback();
+```
+
+---
+
+## Registre de plateformes custom
+
+Vous pouvez étendre la modale fallback avec vos propres cibles de partage via la méthode statique `ShareButton.registerPlatform()`. Les plateformes enregistrées apparaissent dans la modale de toutes les instances `<browserux-share-button>` et respectent la même convention de désactivation `key="false"`.
+
+### `ShareButton.registerPlatform(key, config)`
+
+| Paramètre | Type | Description |
+|---|---|---|
+| `key` | `string` | Identifiant unique, utilisé aussi comme nom d'attribut pour désactiver la plateforme |
+| `config.label` | `string` | Nom affiché sous l'icône |
+| `config.icon` | `string` | URL de l'icône (48×48 recommandé) |
+| `config.getHref` | `(title, text, url) => string` | Fonction qui retourne l'URL de partage |
+
+### Exemple
+
+```js
+import { ShareButton } from 'browserux-share-button';
+
+ShareButton.registerPlatform('mastodon', {
+  label: 'Mastodon',
+  icon: 'https://example.com/mastodon-icon.png',
+  getHref: (title, text, url) =>
+    `https://mastodon.social/share?text=${encodeURIComponent(text + ' ' + url)}`,
+});
+```
+
+Pour désactiver une plateforme custom sur une instance spécifique :
+
+```html
+<browserux-share-button mastodon="false"></browserux-share-button>
+```
+
+> `registerPlatform()` doit être appelé avant que le composant soit connecté au DOM pour que la plateforme apparaisse dès le premier rendu.
+
+---
+
 ## Build & Développement
 
 ```bash
@@ -502,6 +629,16 @@ Le projet utilise TypeScript et Rollup pour générer les fichiers suivants :
 
 > Ces fichiers sont prêts à être utilisés dans des environnements modulaires ainsi que dans des contextes de chargement de scripts traditionnels.
 
+### Tests
+
+```bash
+npm run test           # lancer les tests une fois
+npm run test:watch     # mode watch
+npm run test:coverage  # avec rapport de couverture
+```
+
+Les tests utilisent [Vitest](https://vitest.dev/) avec [happy-dom](https://github.com/capricorn86/happy-dom) comme environnement DOM.
+
 ### Architecture de la classe
 
 ```ts
@@ -514,11 +651,17 @@ class ShareButton extends HTMLElement
 │   ├── root: ShadowRoot | HTMLElement
 │   ├── labels: typeof I18N_LABELS[string]
 │   ├── externalFallbackEl?: HTMLDivElement
-│   └── focusTrapRemover?: () => void
+│   ├── focusTrapRemover?: () => void
+│   └── lastFocus?: HTMLElement
+│
+├── 🗂 Registre statique
+│   ├── private static customPlatforms: Map<string, CustomPlatformConfig>
+│   └── static registerPlatform(key: string, config: CustomPlatformConfig): void
 │
 ├── 🛠️ Configuration & Utilitaires
-│   ├── private isDisabled(platform: SharePlatform): boolean
-│   └── private getShareConfig(platform: SharePlatform): { href: string; label: string; icon: string } | null
+│   ├── private isDisabled(platform: string): boolean
+│   ├── private getShareConfig(platform: SharePlatform): { href, label, icon } | null
+│   └── private dispatch<T>(name: string, detail?: T): void
 │
 ├── 🌐 Localisation & Initialisation
 │   └── private onKeyDown = (e: KeyboardEvent): void
@@ -531,10 +674,17 @@ class ShareButton extends HTMLElement
 │   ├── private renderPlatformLinks(container: HTMLElement): void
 │   ├── private renderCopyButton(container: HTMLElement, initialCopyHtml: string): void
 │   ├── private bindFallbackEvents(container: HTMLElement): void
-│   └── private showFallback(): void
+│   ├── private showFallback(): void
+│   └── private hideFallback(): void
 │
-└── 🔄 Cycle de vie
-    └── async connectedCallback(): Promise<void>
+├── 🔄 Cycle de vie
+│   └── async connectedCallback(): Promise<void>
+│
+└── 🖱 API publique
+    ├── async share(): Promise<void>
+    ├── setShareData(data: Partial<ShareData>): void
+    ├── openFallback(): void
+    └── closeFallback(): void
 ```
 
 ## Licence

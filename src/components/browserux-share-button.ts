@@ -25,7 +25,7 @@
  * These types are shared across the component logic and fallback rendering
  */
 
-import type { SharePlatform, LangKeys } from '../types/';
+import type { SharePlatform, LangKeys, CustomPlatformConfig, ShareData } from '../types/';
 
 /**
  * Utility function to resolve the best available icon URL for the app
@@ -334,7 +334,10 @@ const I18N_LABELS: Record<string, {
   ru: { share: 'Поделиться', email: 'Эл. почта', sms: 'Сообщения', copied: 'Ссылка скопирована!', errorInit: 'Ошибка инициализации кнопки общего доступа:', errorShare: 'Ошибка при нативном общем доступе:', errorCopy: 'Ошибка копирования ссылки:' },
   pt: { share: 'Compartilhar', email: 'Email', sms: 'Mensagens', copied: 'Link copiado!', errorInit: 'Erro ao inicializar o botão de compartilhamento:', errorShare: 'Erro ao compartilhar nativamente:', errorCopy: 'Erro ao copiar o link:' },
   it: { share: 'Condividi', email: 'Email', sms: 'Messaggi', copied: 'Link copiato!', errorInit: 'Errore durante l\'inizializzazione del pulsante di condivisione:', errorShare: 'Errore durante la condivisione nativa:', errorCopy: 'Errore durante la copia del link:' },
-  nl: { share: 'Delen', email: 'E-mail', sms: 'Berichten', copied: 'Link gekopieerd!', errorInit: 'Fout bij het initialiseren van de deelknop:', errorShare: 'Fout bij native delen:', errorCopy: 'Fout bij het kopiëren van de link:' }
+  nl: { share: 'Delen', email: 'E-mail', sms: 'Berichten', copied: 'Link gekopieerd!', errorInit: 'Fout bij het initialiseren van de deelknop:', errorShare: 'Fout bij native delen:', errorCopy: 'Fout bij het kopiëren van de link:' },
+  zh: { share: '分享', email: '邮件', sms: '短信', copied: '链接已复制！', errorInit: '分享按钮初始化失败：', errorShare: '原生分享出错：', errorCopy: '复制链接失败：' },
+  ko: { share: '공유', email: '이메일', sms: '메시지', copied: '링크가 복사되었습니다!', errorInit: '공유 버튼 초기화 오류:', errorShare: '네이티브 공유 오류:', errorCopy: '링크 복사 오류:' },
+  ar: { share: 'مشاركة', email: 'البريد الإلكتروني', sms: 'الرسائل', copied: 'تم نسخ الرابط!', errorInit: 'خطأ في تهيئة زر المشاركة:', errorShare: 'خطأ أثناء المشاركة:', errorCopy: 'خطأ في نسخ الرابط:' }
 };
 
 /**
@@ -389,6 +392,59 @@ class ShareButton extends HTMLElement {
   // Used to control visibility, interaction, and lifecycle of the fallback UI
   private externalFallbackEl?: HTMLDivElement;
 
+  // Element that triggered the fallback; focus is restored when the modal closes
+  private lastFocus?: HTMLElement;
+
+  // -----------------------------------------------------------------------
+  // Static custom platform registry
+  // -----------------------------------------------------------------------
+
+  /**
+   * Registry of user-defined share platforms added via `registerPlatform()`.
+   * Shared across all instances on the page.
+   */
+  private static readonly customPlatforms = new Map<string, CustomPlatformConfig>();
+
+  /**
+   * Registers a custom share platform that will appear in the fallback modal
+   * of every `<browserux-share-button>` on the page.
+   *
+   * @param key    - Unique identifier for the platform (used as attribute name to disable it)
+   * @param config - Label, icon URL, and href builder for the platform
+   *
+   * @example
+   * ShareButton.registerPlatform('mastodon', {
+   *   label: 'Mastodon',
+   *   icon: 'https://example.com/mastodon.png',
+   *   getHref: (_title, text, url) =>
+   *     `https://mastodon.social/share?text=${encodeURIComponent(text + ' ' + url)}`,
+   * });
+   */
+  static registerPlatform(key: string, config: CustomPlatformConfig): void {
+    ShareButton.customPlatforms.set(key, config);
+  }
+
+  // -----------------------------------------------------------------------
+  // Event helpers
+  // -----------------------------------------------------------------------
+
+  /**
+   * Dispatches a CustomEvent that bubbles up through the Shadow DOM boundary.
+   *
+   * All share events follow the naming convention `bux:<event-name>` and carry
+   * an optional `detail` payload so parent apps can track sharing behaviour.
+   *
+   * @param name   - Event name (e.g. 'bux:share-success')
+   * @param detail - Optional payload attached to `event.detail`
+   */
+  private dispatch<T = undefined>(name: string, detail?: T): void {
+    this.dispatchEvent(new CustomEvent<T>(name, {
+      detail,
+      bubbles: true,
+      composed: true,  // crosses Shadow DOM boundaries
+    }));
+  }
+
   // -----------------------------------------------------------------------
   // Configuration & Utilities 
   // -----------------------------------------------------------------------
@@ -399,7 +455,7 @@ class ShareButton extends HTMLElement {
    *   <browserux-share-button facebook="false">
    */
 
-  private isDisabled(platform: SharePlatform): boolean {
+  private isDisabled(platform: SharePlatform | string): boolean {
     return this.getAttribute(platform) === 'false';
   }
 
@@ -496,20 +552,35 @@ class ShareButton extends HTMLElement {
   private focusTrapRemover?: () => void;
   
   /**
-   * Handles the Escape key press to close the fallback modal if it's open.
-   * 
-   * - Removes the `.visible` class from the modal container
-   * - Removes the associated focus trap listener (if any)
+   * Closes the fallback modal, restores focus to the triggering element, and
+   * dispatches the `bux:fallback-close` event.
+   *
+   * This is the single exit point for all close paths (Escape key, backdrop
+   * click, swipe down, and the public `closeFallback()` method).
    */
+  private hideFallback(): void {
+    if (!this.externalFallbackEl) return;
 
+    // Remove visible class to trigger the CSS close transition
+    this.externalFallbackEl.classList.remove('visible');
+
+    // Clean up keyboard listeners and focus trap
+    document.removeEventListener('keydown', this.onKeyDown);
+    if (this.focusTrapRemover) this.focusTrapRemover();
+
+    // Restore focus to the element that triggered the modal
+    if (this.lastFocus) this.lastFocus.focus();
+
+    // Notify the app that the fallback has closed
+    this.dispatch('bux:fallback-close');
+  }
+
+  /**
+   * Handles the Escape key press to close the fallback modal if it's open.
+   */
   private onKeyDown = (e: KeyboardEvent): void => {
-    // If Escape is pressed and the fallback modal is currently visible
     if (e.key === 'Escape' && this.externalFallbackEl?.classList.contains('visible')) {
-      // Hide the modal by removing the visibility class
-      this.externalFallbackEl.classList.remove('visible');
-
-      // If a focus trap remover is set, call it to remove the focus trap listener
-      if (this.focusTrapRemover) this.focusTrapRemover();
+      this.hideFallback();
     }
   };
 
@@ -552,8 +623,11 @@ class ShareButton extends HTMLElement {
 
     // Register a click event handler for the button
     btn.addEventListener('click', async () => {
+      // Save reference to the button so focus can be restored when the modal closes
+      this.lastFocus = btn;
+
       // Prepare the share payload based on resolved metadata
-      const data = {
+      const data: ShareData = {
         title: this.shareTitle,
         text: this.shareText,
         url: this.shareUrl,
@@ -571,14 +645,19 @@ class ShareButton extends HTMLElement {
         try {
           // Try sharing using the native Web Share API
           await navigator.share(data);
+
+          // Native share completed successfully
+          this.dispatch<ShareData>('bux:share-success', data);
         } catch (err: any) {
-          // If the user cancels the share, silently ignore the error
+          // If the user cancels the share, dispatch abort and silently return
           if (err.name === 'AbortError' || err.message?.includes('cancel')) {
+            this.dispatch('bux:share-abort');
             return;
           }
 
-          // On any other error, fallback to custom share options
+          // On any other error, dispatch error event and fallback to custom UI
           console.error(this.labels.errorShare, err);
+          this.dispatch<{ error: unknown }>('bux:share-error', { error: err });
           this.showFallback();
         }
       } else {
@@ -674,18 +753,18 @@ class ShareButton extends HTMLElement {
     // Select the <ul> element where platform <li> items will be added
     const list = container.querySelector('#bux-platforms-list') as HTMLUListElement;
 
-    // List of all supported platforms
+    // List of all supported built-in platforms
     const platforms: SharePlatform[] = ['email', 'x', 'facebook', 'whatsapp', 'sms', 'linkedin', 'telegram', 'reddit'];
 
-    // Detect whether the current device is a mobile (used for SMS)
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    // Detect touch/mobile devices using pointer media query (more reliable than UA sniffing)
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
 
-    // Iterate over all platforms and render them if enabled
+    // Iterate over all built-in platforms and render them if enabled
     platforms.forEach((platform) => {
       // Skip platform if it's explicitly disabled via attribute
       if (this.isDisabled(platform)) return;
 
-      // Skip SMS link if not on a mobile device
+      // Skip SMS link if not on a touch/mobile device
       if (platform === 'sms' && !isMobile) return;
 
       // Create the list item and anchor
@@ -702,6 +781,21 @@ class ShareButton extends HTMLElement {
       a.innerHTML = `<img src="${config.icon}" alt="${config.label}" width="48" height="48"><span>${config.label}</span>`;
 
       // Append the anchor to the list item, and the item to the list
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+
+    // Render custom platforms registered via ShareButton.registerPlatform()
+    ShareButton.customPlatforms.forEach((config, key) => {
+      // Respect the same disable mechanism as built-in platforms
+      if (this.isDisabled(key)) return;
+
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.target = '_blank';
+      a.href = config.getHref(this.shareTitle, this.shareText, this.shareUrl);
+      a.innerHTML = `<img src="${config.icon}" alt="${config.label}" width="48" height="48"><span>${config.label}</span>`;
+
       li.appendChild(a);
       list.appendChild(li);
     });
@@ -739,9 +833,15 @@ class ShareButton extends HTMLElement {
 
         // Restore original HTML after 2 seconds
         setTimeout(() => (copyBtn.innerHTML = initialCopyHtml), 2000);
+
+        // Notify the app that the link was copied
+        this.dispatch<{ url: string }>('bux:copy-success', { url: this.shareUrl });
       } catch (err) {
         // Log error if clipboard copy fails
         console.error(l.errorCopy, err);
+
+        // Notify the app that the copy failed
+        this.dispatch<{ error: unknown }>('bux:copy-error', { error: err });
       }
     });
   }
@@ -764,45 +864,38 @@ class ShareButton extends HTMLElement {
 
       // If click is outside the modal content, close the modal
       if (!inner.contains(e.target as Node)) {
-        container.classList.remove('visible');
-        document.removeEventListener('keydown', this.onKeyDown);
-
-        // Clean up the focus trap if active
-        if (this.focusTrapRemover) this.focusTrapRemover();
+        this.hideFallback();
       }
     });
 
-    // Enable swipe-to-close on mobile devices only
-    if (window.innerWidth <= 768) {
-      let startY: number | null = null;
-      const inner = container.querySelector('.bux-share-fallback-inner') as HTMLElement;
-      if (!inner) return;
+    // Enable swipe-to-close on touch devices
+    const inner = container.querySelector('.bux-share-fallback-inner') as HTMLElement;
+    if (!inner) return;
 
-      // Store the starting Y position of the touch
-      inner.addEventListener('touchstart', (e: TouchEvent) => {
-        startY = e.touches[0].clientY;
-      });
+    let startY: number | null = null;
 
-      // Calculate the vertical swipe distance
-      inner.addEventListener('touchmove', (e: TouchEvent) => {
-        if (startY === null) return;
-        const currentY = e.touches[0].clientY;
-        const diffY = currentY - startY;
+    // Store the starting Y position of the touch
+    inner.addEventListener('touchstart', (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    });
 
-        // If swiped down by more than 60px, close the modal
-        if (diffY > 60) {
-          container.classList.remove('visible');
-          document.removeEventListener('keydown', this.onKeyDown);
-          if (this.focusTrapRemover) this.focusTrapRemover();
-          startY = null;
-        }
-      });
+    // Calculate the vertical swipe distance
+    inner.addEventListener('touchmove', (e: TouchEvent) => {
+      if (startY === null) return;
+      const currentY = e.touches[0].clientY;
+      const diffY = currentY - startY;
 
-      // Reset swipe start on touch end
-      inner.addEventListener('touchend', () => {
+      // If swiped down by more than 60px, close the modal
+      if (diffY > 60) {
+        this.hideFallback();
         startY = null;
-      });
-    }
+      }
+    });
+
+    // Reset swipe start on touch end
+    inner.addEventListener('touchend', () => {
+      startY = null;
+    });
   }
 
   /**
@@ -830,6 +923,9 @@ class ShareButton extends HTMLElement {
       setTimeout(() => {
         // Make the fallback modal visible (adds .visible class)
         this.externalFallbackEl!.classList.add('visible');
+
+        // Notify the app that the fallback is now open
+        this.dispatch('bux:fallback-open');
 
         // Focus the fallback modal container for accessibility
         const inner = this.externalFallbackEl!.querySelector('.bux-share-fallback-inner') as HTMLElement;
@@ -982,6 +1078,53 @@ class ShareButton extends HTMLElement {
         }
       }
     }
+  }
+
+  // -----------------------------------------------------------------------
+  // Public programmatic API
+  // -----------------------------------------------------------------------
+
+  /**
+   * Programmatically triggers the share flow, exactly as if the user clicked
+   * the button. Uses the native Web Share API when available, falls back to
+   * the modal otherwise.
+   */
+  async share(): Promise<void> {
+    const btn = this.root.querySelector<HTMLButtonElement>('#bux-share-btn');
+    btn?.click();
+  }
+
+  /**
+   * Updates the share data used by the component at runtime.
+   * Accepts a partial object — only provided fields are overwritten.
+   *
+   * @example
+   * document.querySelector('browserux-share-button').setShareData({
+   *   title: 'New title',
+   *   url: 'https://example.com/new-page',
+   * });
+   */
+  setShareData(data: Partial<ShareData>): void {
+    if (data.title !== undefined) this.shareTitle = data.title;
+    if (data.text  !== undefined) this.shareText  = data.text;
+    if (data.url   !== undefined) this.shareUrl   = data.url;
+  }
+
+  /**
+   * Programmatically opens the fallback share modal.
+   * Useful for triggering the modal from external UI elements.
+   */
+  openFallback(): void {
+    this.lastFocus = this.root.querySelector<HTMLButtonElement>('#bux-share-btn') ?? undefined;
+    this.showFallback();
+  }
+
+  /**
+   * Programmatically closes the fallback share modal.
+   * Safe to call even if the modal is not currently visible.
+   */
+  closeFallback(): void {
+    this.hideFallback();
   }
 
 }

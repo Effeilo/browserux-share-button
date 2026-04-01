@@ -1,6 +1,6 @@
 {
   "name": "browserux-share-button",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "A smart, customizable Web Component for sharing content via Web Share API with graceful fallback.",
   "main": "dist/browserux-share-button.umd.js",
   "module": "dist/browserux-share-button.esm.js",
@@ -9,7 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "author": "Effeilo",
   "license": "MIT",
@@ -53,6 +56,8 @@
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
-    "rollup-plugin-import-css": "^4.0.1"
+    "happy-dom": "^20.8.9",
+    "rollup-plugin-import-css": "^4.0.1",
+    "vitest": "^2.1.9"
   }
 }
