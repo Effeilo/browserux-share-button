@@ -11,7 +11,7 @@
 BrowserUX Share Button is a lightweight, accessible, and customizable Web Component that simplifies sharing URLs via the native Web Share API, when available, or a responsive fallback modal. It supports multiple platforms (Email, X, WhatsApp, etc.), automatically retrieves share metadata, and offers full localization, visual customization, and framework compatibility.
 
 - [Project website](https://browserux.com/share-button/)
-- [Demo](https://browseruxcss.com/share-button/demo/)
+- [Demo](https://browserux.com/share-button/demo/)
 - [Documentation](./docs/index.md)
 - [Changelog](./CHANGELOG.md)
 
