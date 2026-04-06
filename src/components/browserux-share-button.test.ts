@@ -66,7 +66,7 @@ beforeEach(() => {
   // fetch: always fail so manifest fetch is a no-op
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
 
-  // matchMedia — default: desktop (no coarse pointer = no touch)
+  // matchMedia, default: desktop (no coarse pointer = no touch)
   vi.stubGlobal('matchMedia', vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
@@ -74,7 +74,7 @@ beforeEach(() => {
     removeEventListener: vi.fn(),
   })));
 
-  // navigator.share — default: native share succeeds
+  // navigator.share, default: native share succeeds
   Object.defineProperty(navigator, 'share', {
     value: vi.fn().mockResolvedValue(undefined),
     writable: true,
@@ -236,7 +236,7 @@ describe('Platform disabling', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Mobile detection — SMS
+// Mobile detection, SMS
 // ---------------------------------------------------------------------------
 
 describe('Mobile detection (SMS)', () => {
@@ -320,7 +320,7 @@ describe('registerPlatform()', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Events — native share
+// Events, native share
 // ---------------------------------------------------------------------------
 
 describe('Events: native share', () => {
@@ -363,7 +363,7 @@ describe('Events: native share', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Events — fallback modal
+// Events, fallback modal
 // ---------------------------------------------------------------------------
 
 describe('Events: fallback modal', () => {
@@ -423,7 +423,7 @@ describe('Events: fallback modal', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Events — clipboard copy
+// Events, clipboard copy
 // ---------------------------------------------------------------------------
 
 describe('Events: clipboard copy', () => {

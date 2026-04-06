@@ -15,37 +15,49 @@ et ce projet suit les recommandations de versionnage [SemVer](https://semver.org
 
 <br>
 
+## [1.1.1] – 06-04-2026
+
+### 🛠 Corrigé
+
+- Ajout de `rootDir` dans `tsconfig.json` pour résoudre l'erreur TypeScript 5.x causée par l'absence de répertoire racine explicite quand `declarationDir` est défini
+- Mise à jour de `moduleResolution` de la valeur dépréciée `"node"` vers `"bundler"` pour la compatibilité TypeScript 5.x
+- Suppression de l'entrée `types` inexistante dans `include` dans `tsconfig.json`
+
+---
+
+<br>
+
 ## [1.1.0] – 28-03-2026
 
 ### ✨ Ajout
 
-- 🌍 3 nouvelles langues intégrées : Chinois (`zh`), Coréen (`ko`), Arabe (`ar`) — 12 langues au total
+- 🌍 3 nouvelles langues intégrées : Chinois (`zh`), Coréen (`ko`), Arabe (`ar`), 12 langues au total
 - 📡 Système d'événements custom : le composant émet désormais des `CustomEvent` (avec propagation, traversant le Shadow DOM) :
-  - `bux:share-success` — partage natif réussi, detail : `{ title, text, url }`
-  - `bux:share-abort` — l'utilisateur a annulé la boîte de dialogue de partage natif
-  - `bux:share-error` — erreur inattendue lors du partage natif, detail : `{ error }`
-  - `bux:fallback-open` — modale fallback ouverte
-  - `bux:fallback-close` — modale fallback fermée
-  - `bux:copy-success` — lien copié dans le presse-papiers, detail : `{ url }`
-  - `bux:copy-error` — échec de l'écriture dans le presse-papiers, detail : `{ error }`
-- 🖱 **API programmatique** — nouvelles méthodes publiques :
-  - `share()` — déclenche le flux de partage par code
-  - `setShareData({ title?, text?, url? })` — met à jour les données de partage à la volée
-  - `openFallback()` — ouvre la modale fallback par code
-  - `closeFallback()` — ferme la modale fallback par code
-- 🔌 **Registre de plateformes custom** — méthode statique `ShareButton.registerPlatform(key, config)` pour ajouter des plateformes tierces (ex. Mastodon, Bluesky) dans la modale, avec prise en charge de l'attribut de désactivation
-- 🧪 **Suite de tests** — 33 tests unitaires avec [Vitest](https://vitest.dev/) + [happy-dom](https://github.com/capricorn86/happy-dom), couvrant la détection de langue, les données de partage, les événements custom, l'API publique, le registre de plateformes, la détection mobile et la restauration du focus
+  - `bux:share-success`, partage natif réussi, detail : `{ title, text, url }`
+  - `bux:share-abort`, l'utilisateur a annulé la boîte de dialogue de partage natif
+  - `bux:share-error`, erreur inattendue lors du partage natif, detail : `{ error }`
+  - `bux:fallback-open`, modale fallback ouverte
+  - `bux:fallback-close`, modale fallback fermée
+  - `bux:copy-success`, lien copié dans le presse-papiers, detail : `{ url }`
+  - `bux:copy-error`, échec de l'écriture dans le presse-papiers, detail : `{ error }`
+- 🖱 **API programmatique**, nouvelles méthodes publiques :
+  - `share()`, déclenche le flux de partage par code
+  - `setShareData({ title?, text?, url? })`, met à jour les données de partage à la volée
+  - `openFallback()`, ouvre la modale fallback par code
+  - `closeFallback()`, ferme la modale fallback par code
+- 🔌 **Registre de plateformes custom**, méthode statique `ShareButton.registerPlatform(key, config)` pour ajouter des plateformes tierces (ex. Mastodon, Bluesky) dans la modale, avec prise en charge de l'attribut de désactivation
+- 🧪 **Suite de tests**, 33 tests unitaires avec [Vitest](https://vitest.dev/) + [happy-dom](https://github.com/capricorn86/happy-dom), couvrant la détection de langue, les données de partage, les événements custom, l'API publique, le registre de plateformes, la détection mobile et la restauration du focus
 
 ### 🛠 Corrigé
 
-- 📱 La détection mobile utilise désormais `window.matchMedia('(pointer: coarse)')` à la place du User-Agent — plus fiable sur les navigateurs modernes
+- 📱 La détection mobile utilise désormais `window.matchMedia('(pointer: coarse)')` à la place du User-Agent, plus fiable sur les navigateurs modernes
 - ♿️ Le focus est désormais correctement restauré sur l'élément déclencheur à la fermeture de la modale (via Echap, clic sur le fond, swipe ou `closeFallback()`)
-- 🔁 La logique de fermeture de la modale est centralisée dans une unique méthode `hideFallback()` — suppression du code de nettoyage dupliqué dans les gestionnaires d'événements
+- 🔁 La logique de fermeture de la modale est centralisée dans une unique méthode `hideFallback()`, suppression du code de nettoyage dupliqué dans les gestionnaires d'événements
 
 ### 📦 Nouveaux types exportés
 
-- `CustomPlatformConfig` — interface pour l'enregistrement de plateformes custom
-- `ShareData` — interface pour le contenu à partager (`title`, `text`, `url`)
+- `CustomPlatformConfig`, interface pour l'enregistrement de plateformes custom
+- `ShareData`, interface pour le contenu à partager (`title`, `text`, `url`)
 
 <br>
 

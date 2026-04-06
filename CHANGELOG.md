@@ -15,37 +15,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 <br>
 
+## [1.1.1] – 2026-04-06
+
+### 🛠 Fixed
+
+- Added `rootDir` to `tsconfig.json` to resolve TypeScript 5.x error caused by missing explicit root directory when `declarationDir` is set
+- Updated `moduleResolution` from deprecated `"node"` to `"bundler"` for TypeScript 5.x compatibility
+- Removed non-existent `types` entry from `include` in `tsconfig.json`
+
+---
+
+<br>
+
 ## [1.1.0] – 2026-03-28
 
 ### ✨ Added
 
-- 🌍 Added 3 new built-in languages: Chinese (`zh`), Korean (`ko`), Arabic (`ar`) — now 12 languages total
+- 🌍 Added 3 new built-in languages: Chinese (`zh`), Korean (`ko`), Arabic (`ar`), now 12 languages total
 - 📡 Custom event system: the component now dispatches the following `CustomEvent`s (bubbling, Shadow DOM-aware):
-  - `bux:share-success` — native share completed, detail: `{ title, text, url }`
-  - `bux:share-abort` — user cancelled the native share dialog
-  - `bux:share-error` — unexpected native share failure, detail: `{ error }`
-  - `bux:fallback-open` — fallback modal opened
-  - `bux:fallback-close` — fallback modal closed
-  - `bux:copy-success` — link copied to clipboard, detail: `{ url }`
-  - `bux:copy-error` — clipboard write failed, detail: `{ error }`
-- 🖱 **Programmatic API** — new public methods:
-  - `share()` — triggers the share flow programmatically
-  - `setShareData({ title?, text?, url? })` — updates share data at runtime
-  - `openFallback()` — opens the fallback modal programmatically
-  - `closeFallback()` — closes the fallback modal programmatically
-- 🔌 **Custom platform registry** — `ShareButton.registerPlatform(key, config)` static method to add third-party share targets (e.g. Mastodon, Bluesky) that appear in the fallback modal and respect the disable attribute convention
-- 🧪 **Test suite** — 33 unit tests with [Vitest](https://vitest.dev/) + [happy-dom](https://github.com/capricorn86/happy-dom), covering language detection, share data, custom events, public API, platform registry, mobile detection, and focus restoration
+  - `bux:share-success`, native share completed, detail: `{ title, text, url }`
+  - `bux:share-abort`, user cancelled the native share dialog
+  - `bux:share-error`, unexpected native share failure, detail: `{ error }`
+  - `bux:fallback-open`, fallback modal opened
+  - `bux:fallback-close`, fallback modal closed
+  - `bux:copy-success`, link copied to clipboard, detail: `{ url }`
+  - `bux:copy-error`, clipboard write failed, detail: `{ error }`
+- 🖱 **Programmatic API**, new public methods:
+  - `share()`, triggers the share flow programmatically
+  - `setShareData({ title?, text?, url? })`, updates share data at runtime
+  - `openFallback()`, opens the fallback modal programmatically
+  - `closeFallback()`, closes the fallback modal programmatically
+- 🔌 **Custom platform registry**, `ShareButton.registerPlatform(key, config)` static method to add third-party share targets (e.g. Mastodon, Bluesky) that appear in the fallback modal and respect the disable attribute convention
+- 🧪 **Test suite**, 33 unit tests with [Vitest](https://vitest.dev/) + [happy-dom](https://github.com/capricorn86/happy-dom), covering language detection, share data, custom events, public API, platform registry, mobile detection, and focus restoration
 
 ### 🛠 Fixed
 
-- 📱 Mobile detection now uses `window.matchMedia('(pointer: coarse)')` instead of User-Agent sniffing — more reliable across modern browsers and unusual UA strings
+- 📱 Mobile detection now uses `window.matchMedia('(pointer: coarse)')` instead of User-Agent sniffing, more reliable across modern browsers and unusual UA strings
 - ♿️ Focus is now properly restored to the triggering element when the fallback modal closes (via Escape key, backdrop click, swipe, or `closeFallback()`)
-- 🔁 Fallback close logic centralized in a single `hideFallback()` method — eliminates duplicated teardown code across event handlers
+- 🔁 Fallback close logic centralized in a single `hideFallback()` method, eliminates duplicated teardown code across event handlers
 
 ### 📦 New types exported
 
-- `CustomPlatformConfig` — interface for custom platform registration
-- `ShareData` — interface for share payload (`title`, `text`, `url`)
+- `CustomPlatformConfig`, interface for custom platform registration
+- `ShareData`, interface for share payload (`title`, `text`, `url`)
 
 <br>
 

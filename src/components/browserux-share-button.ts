@@ -1096,7 +1096,7 @@ class ShareButton extends HTMLElement {
 
   /**
    * Updates the share data used by the component at runtime.
-   * Accepts a partial object — only provided fields are overwritten.
+   * Accepts a partial object, only provided fields are overwritten.
    *
    * @example
    * document.querySelector('browserux-share-button').setShareData({
